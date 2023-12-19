@@ -1,6 +1,6 @@
 import {Entity,Column,PrimaryGeneratedColumn} from 'typeorm'
 import { Gender, IUser, UserRole } from './user.interface';
-import { compare, genSalt, hash } from 'bcryptjs';
+import { compare, compareSync, genSalt, hash } from 'bcryptjs';
 
 
 
@@ -28,7 +28,6 @@ export class UserEntity implements IUser {
     role: UserRole;
 
     constructor(user:Omit<IUser,"password">){
-        console.log("LOOOOOOO")
         if(user){
             this.id = user.id;
             this.name = user.name;
@@ -45,7 +44,8 @@ export class UserEntity implements IUser {
         return this;
     }
 
-    public async validatePassword(password:string){
-        return compare(password,this.password);
+    public async validatePassword(password:string,hashPassword:string){
+        let res = compareSync(password,hashPassword);
+        return res;
     }
 }

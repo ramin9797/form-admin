@@ -12,3 +12,13 @@ export class UserCreateDto{
     @Matches(/[a-zA-Z0-9\d]{5,}/,{message:"Too weak password"})    
     password:string
 }
+
+
+export class LoginUserDto{
+    @IsEmail()
+    email:string;
+
+    @IsNotEmpty()
+    @Matches(/[a-zA-Z0-9\d]{5,}/,{message:"Too weak password"})    
+    password:string
+}

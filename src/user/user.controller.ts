@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Header, Headers, HttpException, HttpStatus, Inject, Post, Request, Res, UnauthorizedException, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
-import { UserCreateDto } from './dto/user-create.dto';
+import { LoginUserDto, UserCreateDto } from './dto/user-create.dto';
 import { UserService } from './user.service';
 import { UserEntity } from './user.entity';
 import { CookieOptions, Request as ExpressRequest, Response } from 'express';
@@ -11,7 +11,7 @@ import { IAuthResult } from './user.interface';
 import { CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
-@Controller('user')
+@Controller('auth')
 export class UserController {
     
     constructor(private userService:UserService,
@@ -34,7 +34,7 @@ export class UserController {
 
 
     @Post("login")
-    async login(@Body() userData:UserCreateDto,@Res() res:Response){
+    async login(@Body() userData:LoginUserDto,@Res() res:Response){
         let tokens = await this.userService.login(userData.email,userData.password);
         await this.setRefreshCookie(tokens.refresh_token,res);
         res.status(HttpStatus.CREATED).json(tokens);
@@ -64,13 +64,20 @@ export class UserController {
         // return await this.userService.findAll();
     }
 
-    @Post("refreshToken")
+    @Post("refresh")
     async refresh_token(@Res() res:Response,@Request() req:ExpressRequest,@Cookie("refresh_token") token:string){
         console.log("token",token);
         
         const tokens:IToken =  await this.userService.refresh_token(token)
         this.setRefreshCookie(tokens.refresh_token,res);
         res.status(HttpStatus.CREATED).json(tokens);
+    }
+
+
+    @UseGuards(AuthGuard)
+    @Get("getMe")
+    async getMe(@Res() res:Response,@Request() req:ExpressRequest){
+        res.status(HttpStatus.OK).json(req.user)
     }
 
 }

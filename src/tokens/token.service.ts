@@ -41,8 +41,6 @@ export class TokenService {
         let findToken:TokenEntity = await this.tokenRepo.findOne({where:{user_id:data.user_id}})
         if(findToken){
             let res = await this.tokenRepo.update({user_id:data.user_id},{refresh_token:data.refresh_token})
-            console.log('rrrrr',res);
-            
             return;
         }
         let saveToken = this.tokenRepo.save(data);

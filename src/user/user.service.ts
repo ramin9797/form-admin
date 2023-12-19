@@ -52,23 +52,30 @@ export class UserService {
 
 
     async login(email:string,password:string){
+        console.log(email,password);
+        
         const user = await this.validate(email,password);
+        
         let tokens:IToken = await this.tokenService.generateTokens({email,id:user.id})
         await this.tokenService.saveTokens({
             user_id:user.id,
             refresh_token:tokens.refresh_token
         })
+        console.log('1121212',tokens);
+        
         return tokens;
     }
 
     async validate(email:string,password:string){
         const user = await this.userRepo.findUser(email);
+        
         if(!user){
             throw new NotFoundException({message:"User with email not found"})
         }
 
-        const userEntity = new UserEntity(user);
-        const isCorrectPassword = await userEntity.validatePassword(password);
+        const userEntity = await new UserEntity(user);
+        
+        const isCorrectPassword = await userEntity.validatePassword(password,user.password);
         if(!isCorrectPassword){
             throw new NotFoundException({message:"Email or password not valid"})
         }
